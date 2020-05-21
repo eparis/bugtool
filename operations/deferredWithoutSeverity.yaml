@@ -1,0 +1,49 @@
+default: true
+description: Bugs Deferred Without Severity Set
+name: deferredWithoutSeverity
+query:
+  advanced:
+  - field: blocked
+    op: isempty
+  - field: version
+    op: notequals
+    value: "4.5"
+  - field: component
+    negate: true
+    op: equals
+    value: Documentation
+  - field: component
+    negate: true
+    op: equals
+    value: Release
+  - field: component
+    negate: true
+    op: equals
+    value: RFE
+  classification:
+  - Red Hat
+  include_fields:
+  - status
+  - summary
+  - target_release
+  - id
+  product:
+  - OpenShift Container Platform
+  severity:
+  - unspecified
+  status:
+  - NEW
+  - ASSIGNED
+  - POST
+  - ON_DEV
+  target_release:
+  - 4.5.0
+update:
+  comment:
+    body: This bug has been set to target the 4.5.0 release without specifying a severity.
+      As part of triage when determining the importance of bugs a severity should
+      be specified. Since these bugs have not been properly triaged we are removing
+      the target release. Teams will need to add a severity before deferring these
+      bugs again.
+    is_private: true
+  target_release: '---'
