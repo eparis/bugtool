@@ -148,23 +148,13 @@ Similarly, any bug targeting 4.2.z must have a bug with Target Release of 4.3 in
 	}
 }
 
-func deferredBugsWithoutSeverityQuery() bugzilla.Query {
+func targetReleaseWithoutSeverityQuery() bugzilla.Query {
 	return bugzilla.Query{
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
 		Status:         onEngineeringStatus(),
 		Severity:       []string{"unspecified"},
-		TargetRelease:  []string{"4.5.0"},
 		Advanced: []bugzilla.AdvancedQuery{
-			{
-				Field: "blocked",
-				Op:    "isempty",
-			},
-			{
-				Field: "version",
-				Op:    "notequals",
-				Value: `4.5`,
-			},
 			{
 				Field:  "component",
 				Op:     "equals",
@@ -172,30 +162,28 @@ func deferredBugsWithoutSeverityQuery() bugzilla.Query {
 				Negate: true,
 			},
 			{
-				Field:  "component",
+				Field:  "target_release",
 				Op:     "equals",
-				Value:  "Release",
-				Negate: true,
-			},
-			{
-				Field:  "component",
-				Op:     "equals",
-				Value:  "RFE",
+				Value:  "---",
 				Negate: true,
 			},
 		},
-		IncludeFields: []string{"status", "summary", "target_release", "id"},
+		IncludeFields: []string{"id"},
 	}
 }
 
-func deferredBugsWithoutSeverityUpdate() bugzilla.BugUpdate {
+func targetReleaseWithoutSeverityUpdate() bugzilla.BugUpdate {
 	return bugzilla.BugUpdate{
 		TargetRelease: "---",
 		Comment: &bugzilla.BugComment{
 			Private: true,
-			Body:    `This bug has been set to target the 4.5.0 release without specifying a severity. As part of triage when determining the importance of bugs a severity should be specified. Since these bugs have not been properly triaged we are removing the target release. Teams will need to add a severity before deferring these bugs again.`,
+			Body:    `This bug has set a target release without specifying a severity. As part of triage when determining the importance of bugs a severity should be specified. Since these bugs have not been properly triaged we are removing the target release. Teams will need to add a severity before setting the target release again.`,
 		},
 	}
+}
+
+func noUpdate() bugzilla.BugUpdate {
+	return bugzilla.BugUpdate{}
 }
 
 func getAction(name string, desc string, def bool, query bugzilla.Query, update bugzilla.BugUpdate) string {
@@ -215,10 +203,10 @@ func getAction(name string, desc string, def bool, query bugzilla.Query, update 
 }
 
 func doGenerate() error {
-	name := "deferredWithoutSeverity"
-	desc := "Bugs Deferred Without Severity Set"
-	query := deferredBugsWithoutSeverityQuery()
-	update := deferredBugsWithoutSeverityUpdate()
+	name := "targetReleaseWithoutSeverity"
+	desc := "Bugs Setting Target Release Without Severity Set"
+	query := targetReleaseWithoutSeverityQuery()
+	update := targetReleaseWithoutSeverityUpdate()
 	action := getAction(name, desc, true, query, update)
 	filename := fmt.Sprintf("../operations/%s.yaml", name)
 	err := ioutil.WriteFile(filename, []byte(action), 0644)
